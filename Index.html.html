@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Plant Tracker</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Plants">
+<meta name="theme-color" content="#141F17">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23141F17'/%3E%3Cpath d='M50 78 V40' stroke='%23A8C066' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M50 55 C30 55 25 35 30 22 C45 25 52 38 50 55Z' fill='%237A8B5C'/%3E%3Cpath d='M50 48 C70 48 75 30 70 18 C55 22 48 34 50 48Z' fill='%23C1633D'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23141F17'/%3E%3Cpath d='M50 78 V40' stroke='%23A8C066' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M50 55 C30 55 25 35 30 22 C45 25 52 38 50 55Z' fill='%237A8B5C'/%3E%3Cpath d='M50 48 C70 48 75 30 70 18 C55 22 48 34 50 48Z' fill='%23C1633D'/%3E%3C/svg%3E">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+:root{
+  --bg:#141F17; --surface:#1D2A20; --surfaceRaised:#243024; --border:#33402F;
+  --text:#EDE6D6; --textMuted:#8FA085; --accent:#C1633D; --accentSoft:#7A8B5C; --lime:#A8C066;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Newsreader',serif;}
+body{padding-bottom:env(safe-area-inset-bottom);}
+input,textarea,button{font-family:inherit;}
+input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--lime); outline-offset:2px;}
+::placeholder{color:var(--textMuted); opacity:.7;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+a{color:inherit;}
+button{cursor:pointer;}
+.wrap{max-width:640px;margin:0 auto;padding:28px 20px 100px;}
+.h1{font-size:28px;font-weight:500;margin:0;letter-spacing:-0.01em;display:flex;align-items:center;gap:8px;}
+.tabs{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:16px;}
+.tab{flex:1;padding:9px 0;border-radius:7px;border:none;font-size:14px;font-weight:500;background:transparent;color:var(--textMuted);}
+.tab.active{background:var(--accentSoft);color:#16211A;}
+.searchRow{position:relative;margin-bottom:16px;}
+.searchRow input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px 11px 38px;color:var(--text);font-size:15px;}
+.searchIcon{position:absolute;left:14px;top:12px;color:var(--textMuted);}
+.card{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;text-align:left;color:var(--text);width:100%;margin-bottom:10px;}
+.cardName{font-size:17px;font-weight:500;}
+.cardCross{font-size:13px;color:var(--textMuted);margin-top:2px;}
+.tagPill{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--lime);white-space:nowrap;margin-left:12px;}
+.fab{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);margin-left:min(50vw - 40px, 250px);width:56px;height:56px;border-radius:50%;background:var(--accent);border:none;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.4);font-size:26px;}
+.topBtn{display:flex;align-items:center;gap:4px;background:none;border:none;color:var(--textMuted);font-size:15px;padding:8px 0 12px;}
+.field-label{display:block;font-size:13px;color:var(--textMuted);margin:18px 0 6px;font-family:'IBM Plex Mono',monospace;}
+.field-label:first-of-type{margin-top:0;}
+.input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:15px;}
+.primaryBtn{width:100%;color:#fff;border:none;border-radius:10px;padding:13px 0;font-size:16px;font-weight:500;margin-top:26px;}
+.typeToggle{display:flex;gap:8px;margin-bottom:22px;}
+.typeBtn{flex:1;padding:10px 0;border-radius:8px;font-size:14px;font-weight:500;background:transparent;color:var(--textMuted);border:1px solid var(--border);}
+.typeBtn.active{background:var(--surfaceRaised);color:var(--lime);border-color:var(--accentSoft);}
+.iconBtn{background:none;border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--textMuted);font-size:13px;display:flex;align-items:center;gap:6px;}
+.errBox{background:#3A2420;border:1px solid var(--accent);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:14px;}
+.tagPanel{background:var(--surfaceRaised);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:18px;}
+.linkBox{font-family:'IBM Plex Mono',monospace;font-size:12px;word-break:break-all;background:var(--bg);padding:8px 10px;border-radius:6px;margin:8px 0 10px;}
+.entryBox{background:var(--surfaceRaised);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.dashedBtn{width:100%;background:var(--surfaceRaised);border:1px dashed var(--accentSoft);border-radius:10px;padding:14px 0;color:var(--text);font-size:15px;}
+.photoThumb{position:relative;display:inline-block;}
+.photoThumb img{width:64px;height:64px;object-fit:cover;border-radius:8px;display:block;}
+.photoX{position:absolute;top:-6px;right:-6px;background:var(--bg);border:1px solid var(--border);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--text);font-size:11px;line-height:1;}
+.timeline{position:relative;padding-left:22px;}
+.timelineLine{position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:var(--border);}
+.node{position:relative;margin-bottom:26px;}
+.nodeDot{position:absolute;left:-22px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--lime);border:2px solid var(--bg);}
+.spinner{animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<input type="file" id="photoInput" accept="image/*" capture="environment" multiple style="display:none">
+<input type="file" id="importInput" accept="application/json" style="display:none">
+
+<script>
+/* ---------- IndexedDB layer ---------- */
+const DB_NAME = "plant-tracker-db";
+const STORE = "plants";
+let dbInstance = null;
+
+function openDb() {
+  return new Promise((resolve, reject) => {
+    if (dbInstance) return resolve(dbInstance);
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE)) {
+        db.createObjectStore(STORE, { keyPath: "id" });
+      }
+    };
+    req.onsuccess = (e) => { dbInstance = e.target.result; resolve(dbInstance); };
+    req.onerror = (e) => reject(e.target.error);
+  });
+}
+
+async function dbGetAll() {
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, "readonly");
+    const req = tx.objectStore(STORE).getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = (e) => reject(e.target.error);
+  });
+}
+
+async function dbPut(record) {
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, "readwrite");
+    tx.objectStore(STORE).put(record);
+    tx.oncomplete = () => resolve();
+    tx.onerror = (e) => reject(e.target.error);
+  });
+}
+
+async function dbDelete(id) {
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, "readwrite");
+    tx.objectStore(STORE).delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = (e) => reject(e.target.error);
+  });
+}
+
+/* ---------- Helpers ---------- */
+function compressImage(file, maxWidth = 1100, quality = 0.62) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxWidth / img.width);
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+
+function generateTag() {
+  return "H-" + Date.now().toString(36).toUpperCase().slice(-5);
+}
+
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+function escapeHtml(str) {
+  return (str || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+}
+
+function nfcLink(tag) {
+  return window.location.origin + window.location.pathname + "?plant=" + tag;
+}
+
+/* ---------- State ---------- */
+const state = {
+  view: "list",        // list | new | detail
+  plants: [],
+  loading: true,
+  activeTab: "seedling",
+  search: "",
+  currentId: null,
+  entryOpen: false,
+  entryNote: "",
+  entryPhotos: [],
+  entrySaving: false,
+  formType: "seedling",
+  saving: false,
+  error: null,
+  linkCopied: false,
+  showTagPanel: null, // id of just-created plant
+};
+
+async function init() {
+  state.plants = await dbGetAll();
+  state.loading = false;
+  const params = new URLSearchParams(window.location.search);
+  const tagParam = params.get("plant");
+  if (tagParam) {
+    const match = state.plants.find((p) => p.tag === tagParam || p.id === tagParam);
+    if (match) { state.currentId = match.id; state.view = "detail"; }
+    else { state.error = "That specimen couldn't be found."; }
+  }
+  render();
+}
+
+function currentPlant() {
+  return state.plants.find((p) => p.id === state.currentId) || null;
+}
+
+/* ---------- Actions ---------- */
+window.actions = {
+  goList() {
+    state.view = "list"; state.currentId = null; state.entryOpen = false;
+    state.entryNote = ""; state.entryPhotos = []; state.error = null;
+    render();
+  },
+  goNew() {
+    state.formType = state.activeTab; state.view = "new"; render();
+  },
+  cancelNew() { state.view = "list"; render(); },
+  setTab(tab) { state.activeTab = tab; render(); },
+  setSearch(v) { state.search = v; render(); },
+  setFormType(t) { state.formType = t; render(); },
+
+  async createPlant() {
+    const name = document.getElementById("f-name").value.trim();
+    const cross = document.getElementById("f-cross").value.trim();
+    const tagInput = document.getElementById("f-tag").value.trim();
+    if (!name) return;
+    state.saving = true; render();
+    const id = genId();
+    const tag = tagInput || generateTag();
+    const record = {
+      id, name, cross, tag, type: state.formType,
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      entries: [],
+    };
+    try {
+      await dbPut(record);
+      state.plants.unshift(record);
+      state.currentId = id;
+      state.showTagPanel = id;
+      state.view = "detail";
+    } catch (e) {
+      state.error = "Couldn't save that specimen — try again.";
+    }
+    state.saving = false;
+    render();
+  },
+
+  openPlant(id) {
+    state.currentId = id; state.view = "detail"; state.error = null;
+    render();
+  },
+
+  dismissTagPanel() { state.showTagPanel = null; render(); },
+
+  async changeType(newType) {
+    const p = currentPlant();
+    if (!p) return;
+    p.type = newType;
+    try { await dbPut(p); } catch (e) { state.error = "Couldn't move that specimen."; }
+    state.activeTab = newType;
+    render();
+  },
+
+  openEntry() { state.entryOpen = true; render(); },
+  cancelEntry() { state.entryOpen = false; state.entryNote = ""; state.entryPhotos = []; render(); },
+  noteInput(v) { state.entryNote = v; },
+
+  triggerPhoto() { document.getElementById("photoInput").click(); },
+
+  removePhoto(i) { state.entryPhotos.splice(i, 1); render(); },
+
+  async saveEntry() {
+    const p = currentPlant();
+    const noteEl = document.getElementById("entry-note");
+    const note = noteEl ? noteEl.value.trim() : state.entryNote.trim();
+    if (!p || (!note && state.entryPhotos.length === 0)) return;
+    state.entrySaving = true; render();
+    const entry = { id: genId(), date: new Date().toISOString(), note, photos: state.entryPhotos };
+    p.entries.unshift(entry);
+    p.updatedAt = entry.date;
+    try { await dbPut(p); } catch (e) { state.error = "Couldn't save that entry — try again."; }
+    state.entrySaving = false;
+    state.entryOpen = false; state.entryNote = ""; state.entryPhotos = [];
+    render();
+  },
+
+  async deletePlant(id) {
+    if (!confirm("Delete this specimen and all its growth history? This can't be undone.")) return;
+    try {
+      await dbDelete(id);
+      state.plants = state.plants.filter((p) => p.id !== id);
+      state.view = "list";
+    } catch (e) { state.error = "Couldn't delete — try again."; }
+    render();
+  },
+
+  async copyLink(link) {
+    try {
+      await navigator.clipboard.writeText(link);
+      state.linkCopied = true; render();
+      setTimeout(() => { state.linkCopied = false; render(); }, 2000);
+    } catch (e) { state.error = "Couldn't copy — long-press the link text to copy manually."; render(); }
+  },
+
+  async exportData() {
+    const all = await dbGetAll();
+    const blob = new Blob([JSON.stringify(all, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "plant-tracker-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  },
+
+  triggerImport() { document.getElementById("importInput").click(); },
+};
+
+/* File input listeners */
+document.getElementById("photoInput").addEventListener("change", async (e) => {
+  const files = Array.from(e.target.files || []);
+  if (!files.length) return;
+  try {
+    const compressed = await Promise.all(files.map((f) => compressImage(f)));
+    state.entryPhotos.push(...compressed);
+  } catch (err) { state.error = "Couldn't process that photo."; }
+  e.target.value = "";
+  render();
+});
+
+document.getElementById("importInput").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const records = JSON.parse(text);
+    if (!Array.isArray(records)) throw new Error("bad format");
+    for (const r of records) await dbPut(r);
+    state.plants = await dbGetAll();
+    state.error = null;
+  } catch (err) {
+    state.error = "Couldn't import that file — make sure it's a backup exported from this app.";
+  }
+  e.target.value = "";
+  render();
+});
+
+/* ---------- Render ---------- */
+function render() {
+  const app = document.getElementById("app");
+  if (state.view === "list") app.innerHTML = renderList();
+  else if (state.view === "new") app.innerHTML = renderNew();
+  else if (state.view === "detail") app.innerHTML = renderDetail();
+  attachListListeners();
+}
+
+function renderList() {
+  const filtered = state.plants.filter((p) => {
+    if ((p.type || "seedling") !== state.activeTab) return false;
+    const q = state.search.toLowerCase();
+    return !q || p.name.toLowerCase().includes(q) || (p.tag || "").toLowerCase().includes(q) || (p.cross || "").toLowerCase().includes(q);
+  }).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+  const title = state.activeTab === "seedling" ? "Seedlings" : "Collection";
+  const errHtml = state.error ? `<div class="errBox">${escapeHtml(state.error)}</div>` : "";
+
+  const rows = filtered.map((p) => `
+    <button class="card" onclick="actions.openPlant('${p.id}')">
+      <div>
+        <div class="cardName">${escapeHtml(p.name)}</div>
+        ${p.cross ? `<div class="cardCross">${escapeHtml(p.cross)}</div>` : ""}
+      </div>
+      <div class="tagPill">${escapeHtml(p.tag)}</div>
+    </button>
+  `).join("");
+
+  const empty = !state.loading && filtered.length === 0 ? `
+    <div style="text-align:center;padding:60px 20px;color:var(--textMuted);">
+      <div style="font-size:32px;margin-bottom:12px;opacity:.6;">🌱</div>
+      <p style="font-size:16px;margin:0;">${state.activeTab === "seedling" ? "No seedlings yet." : "Nothing in the collection yet."}</p>
+      <p style="font-size:14px;margin:4px 0 0;">Add one to get a tag you can link to an NFC sticker.</p>
+    </div>` : "";
+
+  return `
+    <div class="wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h1 class="h1">🌿 ${title}</h1>
+        <div style="display:flex;gap:6px;">
+          <button class="iconBtn" onclick="actions.exportData()" title="Backup">⬇ Backup</button>
+          <button class="iconBtn" onclick="actions.triggerImport()" title="Restore">⬆ Restore</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="tab ${state.activeTab === "seedling" ? "active" : ""}" onclick="actions.setTab('seedling')">Seedlings</button>
+        <button class="tab ${state.activeTab === "adult" ? "active" : ""}" onclick="actions.setTab('adult')">Collection</button>
+      </div>
+      <div class="searchRow">
+        <span class="searchIcon">🔍</span>
+        <input value="${escapeHtml(state.search)}" oninput="actions.setSearch(this.value)" placeholder="Search by name, cross, or tag…">
+      </div>
+      <p class="mono" style="font-size:12px;color:var(--textMuted);margin:0 0 20px;">${filtered.length} ${filtered.length === 1 ? "PLANT" : "PLANTS"}</p>
+      ${errHtml}
+      ${state.loading ? `<p style="color:var(--textMuted);font-size:14px;">Loading your collection…</p>` : ""}
+      ${empty}
+      ${rows}
+      <button class="fab" onclick="actions.goNew()">+</button>
+    </div>
+  `;
+}
+
+function renderNew() {
+  return `
+    <div class="wrap">
+      <button class="topBtn" onclick="actions.cancelNew()">‹ Cancel</button>
+      <h2 style="font-size:24px;font-weight:500;margin:0 0 20px;">New specimen</h2>
+      <div class="typeToggle">
+        <button class="typeBtn ${state.formType === "seedling" ? "active" : ""}" onclick="actions.setFormType('seedling')">Seedling</button>
+        <button class="typeBtn ${state.formType === "adult" ? "active" : ""}" onclick="actions.setFormType('adult')">Collection</button>
+      </div>
+      <label class="field-label">NAME</label>
+      <input id="f-name" class="input" placeholder="e.g. Frank's Dahlia" autofocus>
+      <label class="field-label">CROSS / PARENTAGE (optional)</label>
+      <input id="f-cross" class="input" placeholder="e.g. 'Cafe au Lait' x 'Bishop of Llandaff'">
+      <label class="field-label">TAG ID (optional — auto-generated if left blank)</label>
+      <input id="f-tag" class="input" placeholder="e.g. D-12">
+      <button class="primaryBtn" style="background:var(--accent);" onclick="actions.createPlant()" ${state.saving ? "disabled" : ""}>
+        ${state.saving ? "Creating…" : "Create specimen"}
+      </button>
+    </div>
+  `;
+}
+
+function renderDetail() {
+  const p = currentPlant();
+  if (!p) return `<div class="wrap"><p>Specimen not found.</p><button class="topBtn" onclick="actions.goList()">‹ Back</button></div>`;
+
+  const link = nfcLink(p.tag);
+  const tagPanel = state.showTagPanel === p.id ? `
+    <div class="tagPanel">
+      <div style="display:flex;justify-content:space-between;align-items:start;">
+        <p style="font-size:14px;margin:0 0 10px;font-weight:500;">🏷 Write this link to an NFC tag</p>
+        <button onclick="actions.dismissTagPanel()" style="background:none;border:none;color:var(--textMuted);">✕</button>
+      </div>
+      <div class="linkBox">${escapeHtml(link)}</div>
+      <p style="font-size:13px;color:var(--textMuted);margin:0 0 10px;">Use a free app like "NFC Tools" on your iPhone to write this exact link to a blank tag, then stick it on the pot.</p>
+      <button class="iconBtn" style="background:var(--accent);color:#fff;border:none;" onclick="actions.copyLink('${link}')">${state.linkCopied ? "✓ Copied" : "⧉ Copy link"}</button>
+    </div>` : `
+    <div style="margin-top:14px;">
+      <button class="iconBtn" onclick="actions.copyLink('${link}')">🏷 ${state.linkCopied ? "Copied!" : "Copy NFC link"}</button>
+    </div>`;
+
+  const errHtml = state.error ? `<div class="errBox" style="margin-top:16px;">${escapeHtml(state.error)}</div>` : "";
+
+  const entryForm = state.entryOpen ? `
+    <div class="entryBox">
+      <textarea id="entry-note" class="input" rows="4" style="resize:vertical;margin-bottom:12px;" placeholder="Tap here, then tap the mic icon on your keyboard to dictate…" oninput="actions.noteInput(this.value)">${escapeHtml(state.entryNote)}</textarea>
+      ${state.entryPhotos.length ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">${state.entryPhotos.map((src, i) => `
+        <div class="photoThumb"><img src="${src}"><button class="photoX" onclick="actions.removePhoto(${i})">✕</button></div>
+      `).join("")}</div>` : ""}
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="iconBtn" onclick="actions.triggerPhoto()">📷 Photo</button>
+        <button style="background:none;border:none;color:var(--textMuted);font-size:14px;padding:10px 6px;" onclick="actions.cancelEntry()">Cancel</button>
+        <button style="margin-left:auto;background:var(--accent);border:none;border-radius:8px;padding:10px 18px;color:#fff;font-size:14px;" onclick="actions.saveEntry()" ${state.entrySaving ? "disabled" : ""}>${state.entrySaving ? "Saving…" : "Save"}</button>
+      </div>
+    </div>` : `<button class="dashedBtn" onclick="actions.openEntry()">+ Log growth update</button>`;
+
+  const entries = p.entries || [];
+  const timeline = entries.length === 0 ? `
+    <p style="color:var(--textMuted);font-size:14px;text-align:center;padding:20px 0;">No growth entries yet. Log the first one above.</p>` : `
+    <div class="timeline">
+      <div class="timelineLine"></div>
+      ${entries.map((e) => `
+        <div class="node">
+          <div class="nodeDot"></div>
+          <div class="mono" style="font-size:12px;color:var(--textMuted);margin-bottom:6px;">${formatDate(e.date)}</div>
+          ${e.note ? `<p style="margin:0 0 8px;font-size:15px;line-height:1.5;">${escapeHtml(e.note)}</p>` : ""}
+          ${e.photos && e.photos.length ? `<div style="display:flex;gap:8px;flex-wrap:wrap;">${e.photos.map((src) => `<img src="${src}" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid var(--border);">`).join("")}</div>` : ""}
+        </div>
+      `).join("")}
+    </div>`;
+
+  return `
+    <div class="wrap">
+      <button class="topBtn" onclick="actions.goList()">‹ All specimens</button>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <h2 style="font-size:26px;font-weight:500;margin:0;">${escapeHtml(p.name)}</h2>
+        <span class="mono" style="font-size:12px;color:var(--lime);background:var(--surfaceRaised);padding:3px 8px;border-radius:6px;">${escapeHtml(p.tag)}</span>
+      </div>
+      ${p.cross ? `<p style="color:var(--textMuted);font-size:14px;margin:4px 0 0;">${escapeHtml(p.cross)}</p>` : ""}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+        <button class="iconBtn" style="color:var(--lime);" onclick="actions.changeType('${p.type === "seedling" ? "adult" : "seedling"}')">
+          🌱 ${p.type === "seedling" ? "Move to collection (matured)" : "Move back to seedlings"}
+        </button>
+        <button class="iconBtn" style="color:#C1633D;" onclick="actions.deletePlant('${p.id}')">🗑 Delete</button>
+      </div>
+      ${tagPanel}
+      ${errHtml}
+      <div style="margin-top:28px;">${entryForm}</div>
+      <div style="margin-top:32px;">${timeline}</div>
+    </div>
+  `;
+}
+
+function attachListListeners() {} // reserved, all handlers are inline via actions.*
+
+init();
+</script>
+</body>
+</html>
